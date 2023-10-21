@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Interactive Donut with Three.js</title>
+    <style>
+        body { margin: 0; }
+        #slider-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+        }
+        .slider-label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .slider {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+<div id="slider-container">
+    <label class="slider-label" for="xSpeedSlider">X Speed:</label>
+    <input type="range" id="xSpeedSlider" class="slider" min="0.01" max="0.1" step="0.01" value="0.03">
+    <br>
+    <label class="slider-label" for="ySpeedSlider">Y Speed:</label>
+    <input type="range" id="ySpeedSlider" class="slider" min="0.01" max="0.1" step="0.01" value="0.03">
+    <br>
+    <label class="slider-label" for="redSlider">Red Color:</label>
+    <input type="range" id="redSlider" class="slider" min="0" max="255" step="1" value="255">
+    <br>
+    <label class="slider-label" for="greenSlider">Green Color:</label>
+    <input type="range" id="greenSlider" class="slider" min="0" max="255" step="1" value="193">
+    <br>
+    <label class="slider-label" for="blueSlider">Blue Color:</label>
+    <input type="range" id="blueSlider" class="slider" min="0" max="255" step="1" value="7">
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    camera.position.z = 5;
+
+    // Create an elongated torus with materials
+    const torusGeometry = new THREE.TorusGeometry(2, 0.4, 32, 100); // Major radius is 2, minor radius is 0.4
+    const torusMaterial = new THREE.MeshPhongMaterial({
+        shininess: 100,        // Shininess of the material
+    });
+    const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+    scene.add(torus);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+
+    // Get references to the slider elements
+    const xSpeedSlider = document.getElementById('xSpeedSlider');
+    const ySpeedSlider = document.getElementById('ySpeedSlider');
+    const redSlider = document.getElementById('redSlider');
+    const greenSlider = document.getElementById('greenSlider');
+    const blueSlider = document.getElementById('blueSlider');
+
+    // Initialize rotation speeds with slider values
+    let rotationSpeedX = parseFloat(xSpeedSlider.value);
+    let rotationSpeedY = parseFloat(ySpeedSlider.value);
+
+    // Initialize color with slider values
+    let redColor = parseInt(redSlider.value);
+    let greenColor = parseInt(greenSlider.value);
+    let blueColor = parseInt(blueSlider.value);
+
+    // Add event listeners to update rotation speeds when sliders change
+    xSpeedSlider.addEventListener('input', () => {
+        rotationSpeedX = parseFloat(xSpeedSlider.value);
+    });
+
+    ySpeedSlider.addEventListener('input', () => {
+        rotationSpeedY = parseFloat(ySpeedSlider.value);
+    });
+
+    // Add event listeners to update color when sliders change
+    redSlider.addEventListener('input', () => {
+        redColor = parseInt(redSlider.value);
+        updateTorusColor();
+    });
+
+    greenSlider.addEventListener('input', () => {
+        greenColor = parseInt(greenSlider.value);
+        updateTorusColor();
+    });
+
+    blueSlider.addEventListener('input', () => {
+        blueColor = parseInt(blueSlider.value);
+        updateTorusColor();
+    });
+
+    // Function to update the torus color
+    function updateTorusColor() {
+        torusMaterial.color.setRGB(redColor / 255, greenColor / 255, blueColor / 255);
+    }
+
+    const animate = () => {
+        requestAnimationFrame(animate);
+
+        // Rotate the elongated torus using the rotation speeds
+        torus.rotation.x += rotationSpeedX;
+        torus.rotation.y += rotationSpeedY;
+
+        renderer.render(scene, camera);
+    };
+
+    window.addEventListener('resize', () => {
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        renderer.setSize(newWidth, newHeight);
+        camera.aspect = newWidth / newHeight;
+        camera.updateProjectionMatrix();
+    });
+
+    animate();
+</script>
+</body>
+</html>
